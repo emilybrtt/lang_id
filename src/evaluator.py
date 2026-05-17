@@ -1,6 +1,8 @@
+import os
+
 import numpy as np, pandas as pd, matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
-from classifier import LanguageClassifier
+from .classifier import LanguageClassifier
 
 
 def load_test_set(test_dir="data/test") -> list[tuple[str, str]]:
@@ -9,7 +11,7 @@ def load_test_set(test_dir="data/test") -> list[tuple[str, str]]:
     samples = []
     for fname in os.listdir(test_dir):
         lang = fname.replace(".txt", "")
-        with open(os.path.join(test_dir, fname)) as f:
+        with open(os.path.join(test_dir, fname), encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:

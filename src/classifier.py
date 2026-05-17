@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd
-from preprocessing import to_freq_vector
+from src.preprocessing import to_freq_vector
 
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
