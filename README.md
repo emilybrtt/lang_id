@@ -51,17 +51,20 @@ O projeto explora os seguintes conceitos fundamentais:
 - Operações: adição, multiplicação escalar, produto interno
 
 ### 2. Produto Interno (Dot Product)
+
 $$\mathbf{u} \cdot \mathbf{v} = \sum_{i=1}^{n} u_i v_i$$
 
 Usado diretamente no numerador da similaridade cosseno. Mede **alinhamento** entre vetores.
 
 ### 3. Normas e Normalização
+
 $$\|\mathbf{v}\|_2 = \sqrt{\sum_{i=1}^{26} v_i^2}$$
 
 - Normalização por norma (divisão por $N$) cria representação comparável
 - Cosseno exige normas no denominador → invariância à escala
 
 ### 4. Distância Euclidiana
+
 $$d(\mathbf{u}, \mathbf{v}) = \|\mathbf{u} - \mathbf{v}\|_2$$
 
 Métrica de espaço métrico. Define "proximidade" absoluta entre frequências.
