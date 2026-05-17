@@ -11,12 +11,11 @@
 
 1. [Visão Geral](#visão-geral)
 2. [Objetivo](#objetivo)
-3. [Modelagem Matemática](#modelagem-matemática)
-4. [Conceitos de Álgebra Linear](#conceitos-de-álgebra-linear)
-5. [Arquitetura e Estrutura](#arquitetura-e-estrutura)
-6. [Instalação e Configuração](#instalação-e-configuração)
-7. [Uso e Exemplos](#uso-e-exemplos)
-8. [Pipeline de Processamento](#pipeline-de-processamento)
+3. [Conceitos de Álgebra Linear](#conceitos-de-álgebra-linear)
+4. [Arquitetura e Estrutura](#arquitetura-e-estrutura)
+5. [Instalação e Configuração](#instalação-e-configuração)
+6. [Uso e Exemplos](#uso-e-exemplos)
+7. [Pipeline de Processamento](#pipeline-de-processamento)
 9. [Resultados Obtidos](#resultados-obtidos)
 10. [Interpretação dos Resultados](#interpretação-dos-resultados)
 11. [Limitações da Solução](#limitações-da-solução)
@@ -40,55 +39,6 @@ Demonstrar que **frequência de letras em ℝ²⁶** captura informação lingu�
 - Baixo custo computacional: apenas 26 dimensões vs. centenas de n-gramas
 - Validação matemática: comparação crítica com referência (Cavnar & Trenkle 1994)
 - Análise de falhas: matriz de confusão revela padrões estruturados de erro
-
----
-
-## Modelagem Matemática
-
-### Representação Vetorial
-
-Dado um texto bruto $t$, aplicamos o seguinte pipeline:
-
-1. **Limpeza:** conversão para minúsculas + remoção de caracteres não-alfabéticos
-2. **Contagem:** para cada letra $i \in \{a, b, \ldots, z\}$, contamos ocorrências $c_i(t)$
-3. **Normalização:** dividimos por $N = \sum_{i=1}^{26} c_i(t)$ (total de caracteres alfabéticos)
-
-O vetor de frequência normalizado é:
-
-$$\mathbf{v}(t) = \frac{1}{N} \begin{bmatrix} c_1(t) \\ c_2(t) \\ \vdots \\ c_{26}(t) \end{bmatrix} \in \mathbb{R}^{26}$$
-
-**Propriedades:**
-- Componentes em $[0, 1]$
-- Soma $\sum_{i=1}^{26} v_i(t) = 1$ (distribuição de probabilidade)
-- Invariante a maiúsculas/acentos (descartados na limpeza)
-
-### Vetores de Referência
-
-Para cada idioma $\ell \in \{\text{PT}, \text{EN}, \text{ES}, \text{DE}, \text{FR}, \text{IT}\}$, criamos um perfil de referência:
-
-$$\mathbf{r}_\ell = \frac{1}{K_\ell} \sum_{k=1}^{K_\ell} \mathbf{v}(c_k^\ell)$$
-
-onde $c_k^\ell$ são fragmentos não-sobrepostos de 500 caracteres extraídos do corpus de treinamento do idioma $\ell$.
-
-**Motivação:** usar chunks de 500 caracteres evita viés de documentos longos e fornece uma estimativa robusta da distribuição média de frequências.
-
-### Classificação: Duas Métricas
-
-#### Similaridade Cosseno
-
-$$\text{sim}_{\cos}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \cdot \|\mathbf{v}\|_2}$$
-
-**Propriedade:** invariante à magnitude. Captura apenas a **direção** dos vetores no espaço.
-
-**Predição:** $\hat{\ell} = \arg\max_\ell \text{sim}_{\cos}(\mathbf{v}(t), \mathbf{r}_\ell)$
-
-#### Distância Euclidiana
-
-$$d_{\text{euc}}(\mathbf{u}, \mathbf{v}) = \sqrt{\sum_{i=1}^{26} (u_i - v_i)^2}$$
-
-**Propriedade:** mede separação absoluta no espaço. Sensível à **magnitude e direção**.
-
-**Predição:** $\hat{\ell} = \arg\min_\ell d_{\text{euc}}(\mathbf{v}(t), \mathbf{r}_\ell)$
 
 ---
 
@@ -284,7 +234,7 @@ Detected: en
 
 Interpetação: scores negativos indicam distância (quanto menor, melhor; uso de negativo para compatibilidade com ordem). Euclidiana captura **magnitude**, não só direção.
 
-### Modo 3: Executar Avaliação Completa
+### Modo 3: Avaliação completa
 
 ```bash
 uv run main.py --eval
@@ -300,7 +250,7 @@ Gera automaticamente:
 - `report/confusion_matrix.png` (matriz para cosseno)
 - `report/accuracy_vs_length.png` (acurácia vs. comprimento)
 
-### Exemplos Reais Detalhados
+### Exemplos
 
 #### Exemplo 1: Português
 
@@ -322,13 +272,13 @@ l: 0.052
 **Predição cosseno:** PT (score: 0.784)  
 **Predição euclidiana:** PT (score: -0.089)
 
-#### Exemplo 2: Confusão Entre Idiomas Românicos
+#### Exemplo 2: Confusão entre idiomas românicos
 
 **Texto:** "El perro es un animal."
 
 **Scores cosseno:**
 ```
-es: 0.701  ← esperado ✓
+es: 0.701  ← esperado
 pt: 0.684  ← confusão
 fr: 0.672
 it: 0.671
@@ -336,7 +286,7 @@ it: 0.671
 
 **Por quê?** Português, Espanhol, Francês e Italiano compartilham herança latina. Distribuições de frequências são **muito similares**. Modelo é insuficiente em 26 dimensões.
 
-#### Exemplo 3: Texto Curto (Falha Esperada)
+#### Exemplo 3: Texto curto
 
 **Texto:** "Hi"
 
@@ -349,9 +299,41 @@ pt: 0.519
 
 **Problema:** 2 caracteres fornecem quase nenhuma informação sobre distribuição de frequências. Modelo precisa de ~100+ caracteres para acurácia confiável.
 
+
+### Como reproduzir resultados
+
+#### Opção 1: usar dados pré-coletados
+
+```bash
+# Os arquivos data/train/ e data/test/ já existem no repositório
+uv run main.py --eval
+```
+
+#### Opção 2: reconstruir vetores de referência
+
+```bash
+# Lê data/train/ e recalcula data/reference_vectors.csv
+uv run src/vectorizer.py
+uv run main.py --eval
+```
+
+#### Opção 3: recoletar corpus da Wikipédia (requer Internet)
+
+```bash
+# AVISO: isso levará ~30 minutos e fará muitas requisições à Wikipedia
+# Respeitar robots.txt e usar User-Agent adequado (incluído no código)
+uv run corpus_collector.py
+
+# Depois reconstruir vetores
+uv run src/vectorizer.py
+
+# Depois avaliar
+uv run main.py --eval
+```
+
 ---
 
-## Pipeline de Processamento
+## Pipeline de processamento
 
 ### Fase 1: Coleta de Dados (corpus_collector.py)
 
@@ -561,7 +543,7 @@ Exemplo: ticket em PT rotado para ES
 
 **Evidência:** matriz de confusão mostra confusão sistemática dentro do grupo (PT ↔ ES ↔ IT ↔ FR).
 
-### 2. Informação Ddscartada
+### 2. Informação Descartada
 
 **Descartamos:**
 - Acentos (ã, é, ü, etc.) → informação discriminativa em português/espanhol
@@ -635,20 +617,7 @@ Exemplo: ticket em PT rotado para ES
 
 **Desvantagem:** perde interpretabilidade geométrica (26 dimensões era "pura" porque cada dimensão = uma letra).
 
-### 3. Ensemble: Cosseno + euclidiana + outra métrica
-
-**Ideia:** votação entre 3+ classificadores.
-
-**Outras métricas:**
-- Distância Manhattan (L¹)
-- Distância Chebyshev (L∞)
-- Bhattacharyya distance (para distribuições de probabilidade)
-
-**Acurácia esperada:** +2-5% acima do melhor (48-50%).
-
-**Custo:** 3 cálculos por predição vs. 1, ainda negligenciável.
-
-### 4. Pré-filtragem por assinatura
+### 3. Pré-filtragem por assinatura
 
 **Ideia:** usar regras simples antes de classificação linear.
 
@@ -659,17 +628,7 @@ Exemplo: ticket em PT rotado para ES
 
 **Acurácia esperada:** 50-55% (melhora modesta).
 
-### 5. Separadores lineares otimizados (SVM Linear)
-
-**Upgrade:** treinar hyperplanos ótimos via SVM, não apenas centróides.
-
-**Equação:** maximizar margem entre classes em ℝ²⁶.
-
-**Acurácia esperada:** 50-60% (explorar melhor a geometria).
-
-**Mantém:** interpretabilidade relativa + baixo custo.
-
-### 6. Normalização adaptativa por idioma
+### 4. Normalização adaptativa por idioma
 
 **Ideia:** diferentes idiomas têm diferentes "escalas" de frequência.
 
@@ -683,7 +642,7 @@ onde $\mathbf{w}$ = vetor de pesos (importância de cada letra).
 
 **Acurácia esperada:** 48-52%.
 
-### 7. Corpus diversificado
+### 5. Corpus diversificado
 
 **Ideia:** treinar em múltiplas fontes, não só Wikipedia.
 
@@ -702,47 +661,6 @@ onde $\mathbf{w}$ = vetor de pesos (importância de cada letra).
 Cavnar, W. B., & Trenkle, J. M. (1994). *N-gram-based text categorization*. In Proceedings of the 3rd Annual Symposium on Document Analysis and Information Retrieval (SDAIR-94), Las Vegas, NV (pp. 161–175).
 
 **Link:** https://www.let.rug.nl/vannoord/TextCat/textcat.pdf
-
-**Diferença crítica:** Cavnar & Trenkle usam os **300 n-gramas mais frequentes** (vs. nossas 26 letras) e alcançam >99% de acurácia em textos longos. Nosso modelo troca poder preditivo por simplicidade e interpretabilidade.
-
----
-
-## Como reproduzir resultados
-
-### Opção 1: usar dados pré-coletados
-
-```bash
-# Os arquivos data/train/ e data/test/ já existem no repositório
-uv run main.py --eval
-```
-
-**Tempo:** ~5 segundos.
-
-### Opção 2: reconstrói vetores de referência
-
-```bash
-# Lê data/train/ e recalcula data/reference_vectors.csv
-uv run src/vectorizer.py
-uv run main.py --eval
-```
-
-**Tempo:** ~2 segundos (apenas média dos dados existentes).
-
-### Opção 3: recoletar corpus da Wikipédia (requer Internet)
-
-```bash
-# AVISO: isso levará ~30 minutos e fará muitas requisições à Wikipedia
-# Respeitar robots.txt e usar User-Agent adequado (incluído no código)
-uv run corpus_collector.py
-
-# Depois reconstruir vetores
-uv run src/vectorizer.py
-
-# Depois avaliar
-uv run main.py --eval
-```
-
-**Tempo:** ~30 minutos (incluindo rate-limiting).
 
 ---
 
