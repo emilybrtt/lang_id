@@ -483,33 +483,19 @@ def evaluate(clf):
 
 ### Acurácia vs. Comprimento do Texto
 
-| Comprimento (caracteres) | Acurácia (Cosseno) |
-|--------------------------|-------------------|
-| 10 | 18% |
-| 20 | 22% |
-| 50 | 32% |
-| 100 | 39% |
-| 200 | 44% |
-| 500 | 51% |
+![Accuracy vs input length](report/accuracy_vs_length.png)
 
 **Interpretação:** acurácia cresce logaritmicamente com comprimento. Em textos muito curtos, frequências são **ruidosas**. Em textos longos (>500 caracteres), modelo atinge ~51% — melhor, mas ainda limitado.
 
 ### Matriz de Confusão (Cosseno)
 
-```
-       DE  EN  ES  FR  IT  PT  Total  Acurácia
-DE    122  34  12   8   5   4   185    65.9%
-EN     28 134  12  10   5   6   195    68.7%
-ES      8  10  62  26  38  21   165    37.6%
-FR      6   7  24  63  35  30   165    38.2%
-IT      4   3  41  32  46  39   165    27.9%
-PT      2   1  35  28  41  48   155    30.9%
-```
+![Confusion Matrix](report/confusion_matrix.png)
 
 **Leitura:**
-- Linha = verdade, Coluna = predição
+- Linha = verdade (true label)
+- Coluna = predição (predicted label)
 - Diagonal = acertos
-- ES, IT, PT: diagonais fracas, distribuição espalhada nas románicas
+- ES, IT, PT: diagonais fracas, distribuição espalhada nas românicas
 
 ---
 
